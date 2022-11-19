@@ -76,7 +76,7 @@
 
 > 生成森林：对非连通图，由各个连通分量的生成树的集合。
 
-# 邻接矩阵实现图
+# 邻接矩阵
 
 可以借助二维数组来表示树中元素间的关系。这种表示方法称为邻接矩阵。
 
@@ -131,10 +131,128 @@ Status CreateUDN(AMGraph &G) {
 ```
 
 ```cpp
-int LocateVex(AMGraph &G, VertexType u) {
+int LocateVex(AMGraph G, VertexType u) {
     for(int i = 0; i < G.vexnum; i++)
         if(u == G.vexs[i])
             return i;
     return -1;
 }
 ```
+
+但通常，图更多的是采用链表存储，具体的存储方法有 3 种，分别是邻接表、邻接多重表和十字链表。
+
+# 邻接表
+
+邻接表的存储方法跟树的孩子链表示法类似，是一种顺序分配和链式分配相结合的存储结构。
+
+邻接表也有一个顶点表，这是一个顺序表，按编号顺序将顶点数据存储在一维数组中。每个顺序表元素含有保存顶点信息的 data 域和指向首个以该顶点为尾的弧的另一顶点的 firstarc 指针域。每个表元素可看作一个链表的头结点。  
+邻接表用线性链表存储关联同一顶点的边，即以顶点为尾的弧。每个链式表元素含有保存顶点数组下标的 adjvex 域和指向下一个以该顶点为尾的弧的另一顶点的 nextarc 指针域。  
+结点的顺序是任意的，从这点来说同一图的邻接表不唯一。但同一邻接表对应的图唯一。
+
+![](markdown/7-1-1.png)
+
+- 若无向图有 n 个顶点，e 条边，则其邻接表有 n 个头结点和 2e 个表结点。邻接表适宜存储稀疏图。
+- 无向图中顶点 $v_i$ 的度为第 i 个单链表中的结点数。
+
+无向图时每一条边会表示两次，在每一个顶点处都有一个指向另一顶点的表结点。在有向图中只需表示一次。只有当顶点在弧尾、即顶点出边时才记录一次。
+
+![](markdown/7-1-2.png)
+
+在邻接表中
+- 顶点 $v_i$ 的出度是单链表 i 的长度。
+- 顶点 $v_i$ 的入度是所有链表中值是 $i-1$ 的结点个数。这需要遍历所有链表。
+
+有时我们也使用逆邻接表。在这种表中
+- 顶点 $v_i$ 的入度是单链表 i 的长度。
+- 顶点 $v_i$ 的出度是所有链表中值是 $i-1$ 的结点个数。这需要遍历所有链表。
+
+邻接表
+- 便于找到任何一顶点的所有“邻接点”。
+- 可以节约稀疏图的空间。
+- 便于计算无向图顶点的度以及计算有向图顶点的出度。
+  - ”逆邻接表“更方便计算入度。
+- 不便于检查任意一对顶点间是否存在边。
+
+```cpp
+#define MVNum 100;
+typedef char VerTexType;
+typedef int InfoType;
+typedef struct VNode {
+    VerTexType data;
+    ArcNode *firstarc;
+}AdjList[MVNum]; // AdjList v; 相当于 VNode v[MVNum];
+struct ArcNode {
+    int adjvex;
+    ArcNode *nextarc;
+    OtherInfo info;
+};
+struct ALGraph {
+    AdjList vertices;
+    int vexnum;
+    int arcnum;
+};
+```
+
+## 构造邻接表
+
+1. 输入总顶点数 vexnum 和总边数 arcnum。
+2. 创建所有 vexnum 个顶点的顶点表。
+   1. 输入所有顶点的值。
+   2. 使所有顶点结点的指针域初始化为 nullptr。
+3. 创建所有 arcnum 个边的邻接表。
+   1. 输入所有边依附的两个顶点。
+   2. 根据输入定点名称来确定两个顶点的序号 i 和 j，建立边结点。
+   3. 将此边结点分别头插到 $v_i$ $v_j$ 对应的链表。
+
+```cpp
+Status CreateUDG(ALGraph &G) {
+    cin >> G.vexnum >> G.arcnum;
+    for(int i = 0; i < G.vexnum; i++) {
+        cin >> G.vertices[i].data;
+        G.vertices[i].firstarc = nullptr;
+    }
+    int v1, v2, i, j;
+    for(int k = 0; k < G.arcnum; k++) {
+        cin >> v1 >> v2;
+        i = LocateVex(G, v1);
+        j = LocateVex(G, v2);
+        auto p1 = new ArcNode;
+        p1->adjvex = j;
+        p1->nextarc = G.vertices[i].firstarc;
+        G.vertices[i].firstarc = p1;
+        auto p2 = new ArcNode;
+        p2->adjvex = i;
+        p2->nextarc = G.vertices[j].firstarc;
+        G.vertices[j].firstarc = p2;
+    }
+}
+
+Status CreateDG(ALGraph &G) {
+    cin >> G.vexnum >> G.arcnum;
+    for(int i = 0; i < G.vexnum; i++) {
+        cin >> G.vertices[i].data;
+        G.vertices[i].firstarc = nullptr;
+    }
+    int v1, v2, i, j;
+    for(int k = 0; k < G.arcnum; k++) {
+        cin >> v1 >> v2;
+        i = LocateVex(G, v1);
+        j = LocateVex(G, v2);
+        auto p1 = new ArcNode;
+        p1->adjvex = j;
+        p1->nextarc = G.vertices[i].firstarc;
+        G.vertices[i].firstarc = p1;
+    }
+}
+```
+
+## 邻接矩阵与邻接表表示法的关系
+
+![](markdown/7-1-3.png)
+
+- 邻接表中每个链表对应于邻接矩阵中的一行，链表中结点个数等于一行中非零元素的个数。
+- 对于一确定的无向图，其邻接矩阵唯一，但邻接表不唯一。
+- 邻接矩阵的空间复杂度为 $O(n^2)$，邻接表的空间复杂度为 $O(n+e)$。
+- 邻接矩阵多用于稠密图，邻接表多用于稀疏图。
+
+# 十字链表
