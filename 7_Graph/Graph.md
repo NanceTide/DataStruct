@@ -108,7 +108,15 @@ struct AMGraph {
 };
 ```
 
+在该实现中，MVNum 为最大的顶点数；VerTexType 为顶点的数据结构类型，假定为 char；ArcType 为边的权值类型，假定为整型。  
+定义了 VerTexType vexs[MVNum]，它是顶点表，存储顶点数据。ArcType arcs[MVNum][MVNum] 为邻接矩阵，存储权值。容易看到，该实现的大部分空间可能不会被利用，声明的数组大小可能远大于使用的大小。声明 int vexnum 与 int arcnum 分别表示顶点个数与边数目。
+
 ## 构造无向网
+
+1. 输入总顶点数和总边数。
+2. 依次输入点的信息存入顶点表中。
+3. 初始化邻接矩阵，将所有权值初始化为无穷。
+4. 构造邻接矩阵。
 
 ```cpp
 Status CreateUDN(AMGraph &G) {
@@ -119,7 +127,7 @@ Status CreateUDN(AMGraph &G) {
         for(int j = 0; j < G.vexnum; j++)
             G.arcs[i][j] = INT_MAX;
     int v1, v2, w;
-    for(int k = 0; k < G.arcnum; i++) {
+    for(int k = 0; k < G.arcnum; k++) {
         cin >> v1 >> v2 >> w;
         int i = LocateVex(G, v1);
         int j = LocateVex(G, v2);
@@ -128,9 +136,6 @@ Status CreateUDN(AMGraph &G) {
     }
     return OK;
 }
-```
-
-```cpp
 int LocateVex(AMGraph G, VertexType u) {
     for(int i = 0; i < G.vexnum; i++)
         if(u == G.vexs[i])
@@ -243,6 +248,7 @@ Status CreateDG(ALGraph &G) {
         p1->nextarc = G.vertices[i].firstarc;
         G.vertices[i].firstarc = p1;
     }
+    return OK;
 }
 ```
 
@@ -256,3 +262,4 @@ Status CreateDG(ALGraph &G) {
 - 邻接矩阵多用于稠密图，邻接表多用于稀疏图。
 
 # 十字链表
+
