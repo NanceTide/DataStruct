@@ -10,15 +10,16 @@ using namespace std;
 #define OVERFLOW -2
 #define MAX_STACK_SIZE 32
 typedef int Status;
+typedef int ElemType;
 
 struct SqStack {
-    int *base;
-    int *top;
+    ElemType *base;
+    ElemType *top;
     int size;
 };
 
 Status Init(SqStack &s) {
-    s.base = (int*) malloc (MAX_STACK_SIZE * sizeof(int));
+    s.base = (ElemType*) malloc (MAX_STACK_SIZE * sizeof(ElemType));
     if(!s.base)
         return OVERFLOW;
     s.top = s.base;
@@ -26,16 +27,16 @@ Status Init(SqStack &s) {
     return OK;
 }
 
-Status Push(SqStack &s, int elem) {
+Status Push(SqStack &s, ElemType elem) {
     if(s.top - s.base >= s.size) {
-        s.base = (int*) realloc (s.base, s.size * 2 * sizeof(int));
+        s.base = (ElemType*) realloc (s.base, s.size * 2 * sizeof(ElemType));
         if(!s.base)
             return OVERFLOW;
         s.top = s.base + s.size;
         s.size = s.size * 2;
     }
-    s.top++;
     *(s.top) = elem;
+    s.top++;
     return OK;
 }
 
@@ -43,18 +44,18 @@ bool IsEmpty(SqStack s) {
     return s.base == s.top;
 }
 
-Status Pop(SqStack &s, int &elem) {
+Status Pop(SqStack &s, ElemType &elem) {
     if(IsEmpty(s))
         return ERROR;
-    elem = *(s.top);
     s.top--;
+    elem = *(s.top);
     return OK;
 }
 
-Status Top(SqStack s, int &elem) {
+Status Top(SqStack s, ElemType &elem) {
     if(IsEmpty(s))
         return ERROR;
-    elem = *(s.top);
+    elem = *(s.top - 1);
     return OK;
 }
 
@@ -66,8 +67,8 @@ int main() {
     int tmp;
     Top(stack1, tmp);
     cout << tmp << '\n';
-    Pop(stack1, tmp);
-    cout << tmp << '\n';
+    // Pop(stack1, tmp);
+    // cout << tmp << '\n';
     Push(stack1, 2);
     Top(stack1, tmp);
     cout << tmp << '\n';

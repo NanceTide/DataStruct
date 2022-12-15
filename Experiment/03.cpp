@@ -1,6 +1,5 @@
-#include <stack>
-#include <string>
 #include <iostream>
+#include <stdlib.h>
 using namespace std;
 
 #define TRUE 1
@@ -18,14 +17,42 @@ template <typename ElemType> struct SqStack {
     int size;
 };
 
+template <typename ElemType> Status Init(SqStack<ElemType> &s) {
+    s.base = (ElemType*) malloc (MAX_STACK_SIZE * sizeof(ElemType));
+    if(!s.base)
+        return OVERFLOW;
+    s.top = s.base;
+    s.size = MAX_STACK_SIZE;
+    return OK;
+}
+
+template <typename ElemType> Status Push(SqStack<ElemType> &s, ElemType elem) {
+    if(s.top - s.base >= s.size) {
+        s.base = (ElemType*) realloc (s.base, s.size * 2 * sizeof(ElemType));
+        if(!s.base)
+            return OVERFLOW;
+        s.top = s.base + s.size;
+        s.size = s.size * 2;
+    }
+    *(s.top) = elem;
+    s.top++;
+    return OK;
+}
+
 template <typename ElemType> bool IsEmpty(SqStack<ElemType> s) {
     return s.base == s.top;
 }
 
-template <typename ElemType> ElemType StackTop(SqStack<ElemType> &s) {
+template <typename ElemType> Status Pop(SqStack<ElemType> &s, ElemType &elem) {
     if(IsEmpty(s))
-        exit(ERROR);
-    return *(s.base);
+        return ERROR;
+    s.top--;
+    elem = *(s.top);
+    return OK;
+}
+
+template <typename ElemType> ElemType Top(SqStack<ElemType> s) {
+    return *(s.top - 1);
 }
 
 char PriorityCmp(char a, char b) {
@@ -54,18 +81,20 @@ double Operate(double a, char b, double c) {
 int main() {
 
     string expe;
-    stack<double> opnd;
-    stack<char> optr;
+    SqStack<double> opnd;
+    SqStack<char> optr;
     cin >> expe;
+    Init(opnd);
+    Init(optr);
 
     double numTmp = 0;
     double numL;
     double numR;
     char operTmp;
     expe = expe + "#";
-    optr.push('#');
+    Push(optr, '#');
 
-    for(int i = 0; !(expe[i] == '#' && optr.top() == '#'); ) {
+    for(int i = 0; !(expe[i] == '#' && Top(optr) == '#'); ) {
         if(isdigit(expe[i])) {
             numTmp *= 10;
             numTmp += expe[i] - '0';
@@ -73,33 +102,30 @@ int main() {
         }
         else {
             if(numTmp) {
-                opnd.push(numTmp);
+                Push(opnd, numTmp);
                 numTmp = 0;
             }
             operTmp = expe[i];
-            switch(PriorityCmp(optr.top(), operTmp)) {
+            switch(PriorityCmp(Top(optr), operTmp)) {
                 case '<':
-                    optr.push(operTmp);
+                    Push(optr, operTmp);
                     i++;
                     break;
                 case '>':
-                    numR = opnd.top();
-                    opnd.pop();
-                    numL = opnd.top();
-                    opnd.pop();
-                    operTmp = optr.top();
-                    optr.pop();
-                    opnd.push(Operate(numL, operTmp, numR));
+                    Pop(opnd, numR);
+                    Pop(opnd, numL);
+                    Pop(optr, operTmp);
+                    Push(opnd, Operate(numL, operTmp, numR));
                     break;
                 case '=':
-                    optr.pop();
+                    Pop(optr, operTmp);
                     i++;
                     break;
             }
         }
     }
 
-    cout << opnd.top();
+    cout << Top(opnd);
     return 0;
 
 }
