@@ -330,7 +330,7 @@ vector<int> sameInt(int num, int time){
 
 int main(){
 
-    int num = 6;
+    int num = 7;
     InsertSort<int> insert(randomInt(num));
     SelectionSort<int> selection(randomInt(num));
     BubbleSort<int> bubble(randomInt(num));
