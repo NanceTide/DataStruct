@@ -1,5 +1,8 @@
 #include <iostream>
+#include <stdio.h>
 #include <string.h>
+#include <string>
+#include <map>
 using namespace std;
 
 typedef struct HTNode {
@@ -84,11 +87,49 @@ int main() {
 
     HuffmanTree HT;
     HuffmanCode HC;
-    int arr[11] = {6, 7, 2, 5, 8, 1, 2, 3, 4, 5, 6};
-    CreateHuffmanTree(HT, arr, 11);
-    HuffmanCoding(HT, HC, 11);
-    cout << HC[2];
+    map<char, int> alpha_map;
+    string str_origin;
+    string str_aftercode;
+    string str_decode;
+    getline(cin, str_origin);
 
+    for(auto c: str_origin) {
+        if(alpha_map.count(c) == 0)
+            alpha_map[c] = 1;
+        else 
+            alpha_map[c]++;
+    }
+
+    int *weight_arr = (int*) malloc (sizeof(int) * alpha_map.size());
+    char *alpha_arr = (char*) malloc (sizeof(char) * alpha_map.size());
+    
+    int index = 0;
+    for(auto c : alpha_map) {
+        alpha_arr[index] = c.first;
+        weight_arr[index] = c.second;
+        index++;
+    }
+
+    CreateHuffmanTree(HT, weight_arr, alpha_map.size());
+    HuffmanCoding(HT, HC, alpha_map.size());
+    
+    map<char, string> HC_charstring;
+    for(int i = 0; i < alpha_map.size(); i++) {
+        HC_charstring[alpha_arr[i]] = HC[i + 1];
+    }
+
+    for(auto c : HC_charstring) {
+        cout << c.first << ' ' << c.second << '\n';
+    }
+
+    for(auto c : str_origin) {
+        str_aftercode += HC_charstring[c];
+    }
+
+    cout << str_aftercode << '\n';
+
+    cout << str_origin;
+    
     return 0;
 
 }

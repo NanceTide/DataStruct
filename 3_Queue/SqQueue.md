@@ -82,8 +82,8 @@ rear 始终指向最新入队元素的下一个元素，这意味着除非队列
 Status Push(SqQueue &q, Elemtype elem) {
     if((q.rear + 1) % MAX_SQ_SIZE == q.front)
         return ERROR;
-    Q.base[Q.rear] = elem;
-    Q.rear = (Q.rear + 1) % MAX_SQ_SIZE;
+    q.base[q.rear] = elem;
+    q.rear = (q.rear + 1) % MAX_SQ_SIZE;
     return OK;
 }
 ```

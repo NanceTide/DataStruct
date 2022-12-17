@@ -116,7 +116,7 @@ bool IsBracketMatched(string expe) {
     SqStack bracket_stack;
     Init(bracket_stack);
     for(auto c : expe) {
-        if(IsEmpty((bracket_stack)))
+        if(IsEmpty(bracket_stack) && (c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}'))
             Push(bracket_stack, c);
         else {
             char tmp;
@@ -147,12 +147,47 @@ bool IsBracketMatched(string expe) {
         return false;
 }
 
+bool IsCentrosymmetric_Stack(string expe) {
+    SqStack expe_stack;
+    Init(expe_stack);
+    for(int i = 0; i < (expe.length() + 1) / 2; i++) {
+        Push(expe_stack, expe[i]);
+    }
+
+    char tmp;
+    for(int i = expe.length() / 2; i < expe.length(); i++) {
+        Pop(expe_stack, tmp);
+        if(tmp != expe[i])
+            return false;
+    } 
+
+    return true;
+}
+
+bool IsCentrosymmetric_Queue(string expe) {
+    SqQueue expe_queue;
+    Init(expe_queue);
+    for(int i = 0; i < (expe.length() + 1) / 2; i++) {
+        Push(expe_queue, expe[i]);
+    }
+
+    char tmp;
+    for(int i = expe.length() - 1; i > expe.length() / 2; i--) {
+        Pop(expe_queue, tmp);
+        if(tmp != expe[i])
+            return false;
+    }
+    return true;
+}
+
 int main() {
     
     string expe;
     cin >> expe;
     cout << boolalpha;
-    cout << IsBracketMatched(expe);
+    cout << "括号匹配:" << IsBracketMatched(expe) << '\n';
+    cout << "中心对称（栈检测）:" << IsCentrosymmetric_Stack(expe) << '\n';
+    cout << "括号匹配（队列检测）:" << IsCentrosymmetric_Queue(expe) << '\n';
     
     return 0;
 
