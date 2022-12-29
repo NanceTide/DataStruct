@@ -1,3 +1,4 @@
+#include <corecrt_math.h>
 #include <iostream>
 #include <stdlib.h>
 using namespace std;
@@ -22,7 +23,7 @@ typedef BiTree Elemtype;
 
 Status PreOrderCreate(BiTree &root) {
     int num;
-    scanf("%d", &num);
+    cin >> num;
     if(num == -1)
         root = nullptr;
     else {

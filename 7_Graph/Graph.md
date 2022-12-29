@@ -95,10 +95,10 @@
 - 有向图的邻接矩阵可能对称。
 - 有向图顶点 i 的出度等于 i 所在行的所有元素之和，入度等于 i 所在列的所有元素之和。
 
-如果给图上的边加权，图即成为网。令 A.arcs[i][j] 等于权值，若无权值，则等于无穷。可以使用 <climits> 库，它包含了宏 INT_MAX，可作为无穷大。
+如果给图上的边加权，图即成为网。令 A.arcs[i][j] 等于权值，若无权值，则等于无穷。可以使用 \<climits\> 库，它包含了宏 INT_MAX，可作为无穷大。
 
 ```cpp
-#define MVNum 100;
+#define MVNum 100
 typedef char VerTexType;
 typedef int ArcType;
 struct AMGraph {
@@ -126,13 +126,14 @@ Status CreateUDN(AMGraph &G) {
     for(int i = 0; i < G.vexnum; i++)
         for(int j = 0; j < G.vexnum; j++)
             G.arcs[i][j] = INT_MAX;
-    int v1, v2, w;
+    VerTexType v1, v2;
+    ArcType w;
     for(int k = 0; k < G.arcnum; k++) {
         cin >> v1 >> v2 >> w;
         int i = LocateVex(G, v1);
         int j = LocateVex(G, v2);
         G.arcs[i][j] = w;
-        G.arcs[j][i] = G.arcs[i][j];
+        G.arcs[j][i] = w;
     }
     return OK;
 }
@@ -151,7 +152,8 @@ int LocateVex(AMGraph G, VertexType u) {
 邻接表的存储方法跟树的孩子链表示法类似，是一种顺序分配和链式分配相结合的存储结构。
 
 邻接表也有一个顶点表，这是一个顺序表，按编号顺序将顶点数据存储在一维数组中。每个顺序表元素含有保存顶点信息的 data 域和指向首个以该顶点为尾的弧的另一顶点的 firstarc 指针域。每个表元素可看作一个链表的头结点。  
-邻接表用线性链表存储关联同一顶点的边，即以顶点为尾的弧。每个链式表元素含有保存顶点数组下标的 adjvex 域和指向下一个以该顶点为尾的弧的另一顶点的 nextarc 指针域。  
+邻接表用线性链表存储关联同一顶点的边，即以顶点为尾的弧。每个链式表元素含有保存顶点数组下标的 adjvex 域和指向下一个以该主顶点为尾的弧的 nextarc 指针域。  
+尽管我们将其称之为弧，但是实质上，这个弧只储存了另顶点的下标、以及主顶点的下一个弧，它并不完整。与此形成对比的是十字链表，十字链表中的弧包含了弧的入度与出度，以及指向弧头的下一个弧和指向弧尾的下一个弧，其实现十分完整。
 结点的顺序是任意的，从这点来说同一图的邻接表不唯一。但同一邻接表对应的图唯一。
 
 ![](markdown/7-1-1.png)
@@ -179,9 +181,9 @@ int LocateVex(AMGraph G, VertexType u) {
 - 不便于检查任意一对顶点间是否存在边。
 
 ```cpp
-#define MVNum 100;
+#define MVNum 100
 typedef char VerTexType;
-typedef int InfoType;
+typedef int ArcType;
 typedef struct VNode {
     VerTexType data;
     ArcNode *firstarc;
@@ -189,7 +191,7 @@ typedef struct VNode {
 struct ArcNode {
     int adjvex;
     ArcNode *nextarc;
-    OtherInfo info;
+    ArcType weight;
 };
 struct ALGraph {
     AdjList vertices;
@@ -210,43 +212,73 @@ struct ALGraph {
    3. 将此边结点分别头插到 $v_i$ $v_j$ 对应的链表。
 
 ```cpp
+int LocateVex(ALGraph G, VerTexType elem) {
+    for(int i = 0; i < G.vexnum; i++)
+        if(G.vexs[i].data == elem)
+            return i;
+    return -1;
+}
 Status CreateUDG(ALGraph &G) {
     cin >> G.vexnum >> G.arcnum;
     for(int i = 0; i < G.vexnum; i++) {
         cin >> G.vertices[i].data;
         G.vertices[i].firstarc = nullptr;
     }
-    int v1, v2, i, j;
+    VerTexType vi, vj;
     for(int k = 0; k < G.arcnum; k++) {
-        cin >> v1 >> v2;
-        i = LocateVex(G, v1);
-        j = LocateVex(G, v2);
-        auto p1 = new ArcNode;
-        p1->adjvex = j;
-        p1->nextarc = G.vertices[i].firstarc;
+        cin >> vi >> vj;
+        int i = LocateVex(G, v1);
+        int j = LocateVex(G, v2);
+        auto pi = new ArcNode;
+        auto pj = new ArcNode;
+        pj->adjvex = i;
+        pi->adjvex = j;
+        pi->nextarc = G.vertices[i].firstarc;
+        pj->nextarc = G.vertices[j].firstarc;
         G.vertices[i].firstarc = p1;
-        auto p2 = new ArcNode;
-        p2->adjvex = i;
-        p2->nextarc = G.vertices[j].firstarc;
         G.vertices[j].firstarc = p2;
     }
 }
-
 Status CreateDG(ALGraph &G) {
     cin >> G.vexnum >> G.arcnum;
     for(int i = 0; i < G.vexnum; i++) {
         cin >> G.vertices[i].data;
         G.vertices[i].firstarc = nullptr;
     }
-    int v1, v2, i, j;
+    VerTexType v1, v2;
     for(int k = 0; k < G.arcnum; k++) {
         cin >> v1 >> v2;
-        i = LocateVex(G, v1);
-        j = LocateVex(G, v2);
+        int i = LocateVex(G, v1);
+        int j = LocateVex(G, v2);
         auto p1 = new ArcNode;
         p1->adjvex = j;
         p1->nextarc = G.vertices[i].firstarc;
         G.vertices[i].firstarc = p1;
+    }
+    return OK;
+}
+Status CreateUDN(ALGraph &G) {
+    cin >> G.vexnum >> G.arcnum;
+    for(int i = 0; i < G.vexnum; i++) {
+        cin >> G.vexs[i].data;
+        G.vexs[i].first = nullptr;
+    }
+    VerTexType vi, vj;
+    ArcType w;
+    for(int k = 0; k < G.arcnum; k++) {
+        cin >> vi >> vj >> w;
+        int i = LocateVex(G, vi);
+        int j = LocateVex(G, vj);
+        auto pi = new ArcNode;
+        auto pj = new ArcNode;
+        pi->weight = w;
+        pj->weight = w;
+        pi->adjvex = j;
+        pj->adjvex = i;
+        pi->next = G.vexs[i].first;
+        pj->next = G.vexs[j].first;
+        G.vexs[i].first = pi;
+        G.vexs[j].first = pj;
     }
     return OK;
 }
@@ -261,5 +293,51 @@ Status CreateDG(ALGraph &G) {
 - 邻接矩阵的空间复杂度为 $O(n^2)$，邻接表的空间复杂度为 $O(n+e)$。
 - 邻接矩阵多用于稠密图，邻接表多用于稀疏图。
 
-# 十字链表
+## 邻接表的打印
 
+```cpp
+Status Prt(ALGraph G) { // UDN
+    for(int i = 0; i < G.vexnum; i++) {
+        cout << G.vexs[i].data << " -> ";
+        auto p = G.vexs[i].first;
+        while(p) {
+            cout << G.vexs[p->adjvex].data << ',' << p->weight << "; ";
+            p = p->next;
+        }
+        cout << '\n';
+    }
+    return OK;
+}
+```
+
+# 十字链表 OLGraph
+
+邻接表在表示有向图时求结点的度很困难，而十字链表没有这个问题。
+
+十字链表只能存储有向图。该结构可以看成是将有向图的邻接表和逆邻接表结合起来得到的。用十字链表来存储有向图，可以达到高效的存取效果。同时，代码的可读性也会得到提升。
+
+在十字链表中，顶点 VNode[i] 同时存储 data，in 和 out。弧同时存储 tail，head，hlink 和 tlink。  
+in 为第一个入度弧，即以该点为弧头的第一条弧，即以该点为箭头头的第一条弧，即以该点为终端点的第一条弧。   
+out 为第一个出度弧，即以该点为弧尾的第一条弧，即以该点为箭头尾的第一条弧，即以该点为起始点的第一条弧。  
+tail 是弧的出度的下标，即弧的弧尾顶点的下标，即箭头尾顶点的下标。  
+head 是弧的入度的下标，即弧的弧头顶点的下标，即箭头头顶点的下标。
+hlink 是弧头相同的下一条弧。即是说，下一条弧的弧头顶点与该弧的弧头顶点相同。
+tlink 是弧尾相同的下一条弧。即是说，下一条弧的弧尾顶点与该弧的弧尾顶点相同。
+
+![](markdown/7-1-4.png)
+
+可以观察下面的例子。
+
+![](markdown/7-1-5.png)
+
+![](markdown/7-1-6.png)
+
+同一图的十字链表表示法不唯一，但给定十字链表唯一确定一个图。
+
+## TODO: 代码实现十字链表
+
+# 邻接多重表
+
+邻接多重表只能存储无向图。
+
+TODO: 邻接多重表
