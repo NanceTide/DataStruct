@@ -23,7 +23,7 @@ TODO: 复杂度待查证
 ```cpp
 void DepthFirstSearchTraverse(AMGraph G) {
     int n = G.vexnum;
-    bool visited[i];
+    bool visited[];
     for(int i = 0; i < G.vexnum; i++)
         visited[i] = false;
     for(int i = 0; i < G.vexnum; i++)
@@ -45,7 +45,13 @@ void DFS(int i, AMGraph G, bool *visited) {
 
 ```cpp
 void DepthFirstSearchTraverse(AMGraph G) {
-    
+    stack<int> st;
+    bool visited[];
+    for(int i = 0; i < G.vexnum; i++)
+        visited[i] = false;
+    for(int i = 0; i < G.vexnum; i++) {
+        if(!visited[i])
+    }
 }
 ```
 
