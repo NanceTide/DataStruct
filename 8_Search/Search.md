@@ -248,19 +248,55 @@ Status Insert(BSTree root, ElemType data) {
 - 若待删除的结点既有左子树，又有右子树，则
   - 用该结点的中序前驱进行值替换，随后删除此前驱结点。也可以用其中序后继进行值替换，随后删除此后继节点。
 
+尽管替换待删除结点的前驱或者后继皆可，但在黑皮书《算法导论（第三版）》和红皮书《算法（第四版）》中，均只考虑了替换其后继结点。事实上，替换后继结点也会更简单一些。
+
+我们先考虑实现一个 DeleteMin()。这个方法删除查找表中最小的一个键值对。
+
+- 如果根结点没有左子树，则根节点就是最小键；返回根节点的右子树即可。
+- 如果根结点有左子树，应该递归地搜索根结点的左子树。  
+
+以下代码是参考《算法（第四版）》的。这本书基于 Java，而 Java 有完善的垃圾回收机制。若转移到 C++ 上还需要使用智能指针。这个函数返回删除后的根结点。
+
 ```cpp
-Status Delete(BSTree root, ElemType data) {
-    if(!root)
-        return OK;
-    else {
-        if(data.key < root->data.key)
-            Delete(root->lchild, data);
-        else if(data.key > root->data.key)
-            Delete(root->rchild, data);
-        else if(data.key == root->data.key) {
-            BSTree 
-        }
+BSTree DeleteMin(BSTree &root) {
+    if(!root->lchild) {
+        BSTree t = root;
+        root = root->rchild;
+        return root;
     }
+    root->lchild = DeleteMin(root->lchild);
+    return root;
+}
+```
+
+1. 将指向即将被删除的结点的链接保存为 t。
+2. 将 x 设为 t 的后继结点。具体做法是先取 t 的右子树，然后不断检查左子树，直到遇见空的左链接。
+3. 将 x 的右链接（它原本指向一颗所有结点都大于 x->key 的二叉搜索树）指向 DeleteMin(t->rchild)，也就是在删除后所有结点仍然都大于 x->key 的子二叉搜索树。
+4. 将 x 的左链接（本来为空）设为 t->lchild（其下所有的键都小于被删除的结点和其后继结点）。
+
+敬请参阅《算法（第四版》260页。
+
+```cpp
+BSTree DeleteEqual(BSTree &root, int data) {
+    if(!root)
+        return nullptr;
+    if(data < root->data)
+        root->lchild = DeleteEqual(root->lchild, data);
+    else if(data > root->data)
+        root->rchild = DeleteEqual(root->rchild, data);
+    else if(data == root->data) {
+        if(!root->lchild)
+            return root->rchild;
+        if(!root->rchild)
+            return root->lchild;
+        BSTree t = root;
+        root = root->rchild;
+        while(root->lchild)
+            root = root->lchild;
+        root->rchild = DeleteMin(t->rchild);
+        root->lchild = t->lchild;
+    }
+    return root;
 }
 ```
 
@@ -290,3 +326,67 @@ Status Delete(BSTree root, ElemType data) {
 
 无论如何，平衡调整应该保证把三个元素中，大小中等的元素排成根结点。然后，把较小者、较大者分别接在根结点的左孩子、右孩子上。
 
+# 散列表
+
+散列表借助一个 Hash 函数实现。在散列表中，记录的存储位置与关键字之间存在 Hash 函数的对应关系。
+
+散列方法是指选取某个函数，依该函数按键计算元素的存储位置，并按此存放。查找时，由同一个函数对键计算，得到地址，比较该地址上的键与待查找的键，以确定查找是否成功。
+
+散列函数是指散列方法中使用的转换函数。如果散列函数将不同的键映射到了同一个地址，则称发生冲突。将具有相同函数值的多个关键字叫做同义词。
+
+散列存储即选取某个函数，依该函数按键计算元素的存储位置。在散列查找方法中，冲突不可避免，但可尽可能设法减少。
+
+一个好的散列函数应该尽可能简单，以提高转换的速度。同时对不同键计算出的地址，应该在散列地址集中且均匀的分布，以减少空间浪费与冲突。此外在查找时，如果从散列函数计算出的地址中查不到关键码，则应当依据解决冲突的规则，有规律地查询其他相关单元。
+
+构造散列函数时需要考虑的因素很多，包括执行速度、键长度、散列表大小、关键字分布情况、查找频率等等。
+
+## 散列函数举例
+
+### 直接定址
+
+$Hash(key)=a\cdot key+b$  
+以键的某个线性函数值作散列地址。
+
+### 除留余数
+
+$Hash(key)=key\ \%\ p$  
+设表长为 m，可取 p <= m 且为质数。
+
+## 冲突处理
+
+### 开放定址
+
+在有冲突时，寻找下一空的散列地址。只要散列表足够大，空的散列地址总可找到，并将数据元素存入。
+
+例如，除留余数法可以用开放定址：  
+$H_i=(Hash(key)+d_i)\ \%\ m$  
+其中 $d_i$ 是一个增量序列。
+
+增量序列有多种常用的确定方式。例如：  
+线性探测 1, 2, 3, ... m-1   
+二次探测 1, -1, 4, -4, ... q^2, -q^2  
+伪随机探测 伪随机数序列
+
+### 链地址
+
+链地址的基本思想是将具有相同散列地址的记录链成一个单链表。若有 m 个散列地址，就设 m 个单链表，然后用一个数组将 m 个单链表的表头指针存储起来，形成一个动态的结构。整体看起来有点像邻接表。
+
+取数据元素的键，计算其散列函数值。若该值对应的链表为空，则将该元素插入此链表。否则，利用头插或者尾插将该元素插入此链表。
+
+使用链地址法有诸多好处。
+- 非同义词不会冲突，不会发生聚集。
+- 链表上的结点空间可动态申请，更适合于表长不确定的情况。
+
+## 效率
+
+散列表的 ASL 取决于
+- 散列函数
+- 冲突处理方法
+- 散列表装填因子 $\alpha$  
+其中 $\alpha=\frac{表中记录数}{哈希表长度}$。$\alpha$ 越大，说明表越满，冲突发生可能性越大，查找时比较次数就会越多。
+
+$ASL_{链地址}\thickapprox1+\frac{\alpha}2$   
+$ASL_{线性探测}\thickapprox\frac{1}{2}(1+\frac1{1-\alpha})$   
+$ASL_{随机探测}\thickapprox-\frac{1}{\alpha}ln(1-\alpha)$
+
+一般来说，链地址优于开放寻址，除留余数作散列函数优于其他类型函数。

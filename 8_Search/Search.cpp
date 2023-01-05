@@ -126,6 +126,38 @@ void InOrderTraverse(BSTree root) {
     InOrderTraverse(root->rchild);
 }
 
+BSTree DeleteMin(BSTree &root) {
+    if(!root->lchild) {
+        BSTree t = root;
+        root = root->rchild;
+        return root;
+    }
+    root->lchild = DeleteMin(root->lchild);
+    return root;
+}
+
+BSTree DeleteEqual(BSTree &root, int data) {
+    if(!root)
+        return nullptr;
+    if(data < root->data)
+        root->lchild = DeleteEqual(root->lchild, data);
+    else if(data > root->data)
+        root->rchild = DeleteEqual(root->rchild,data);
+    else if(data == root->data) {
+        if(!root->lchild)
+            return root->rchild;
+        if(!root->rchild)
+            return root->lchild;
+        BSTree t = root;
+        root = root->rchild;
+        while(root->lchild)
+            root = root->lchild;
+        root->rchild = DeleteMin(t->rchild);
+        root->lchild = t->lchild;
+    }
+    return root;
+}
+
 int main() {
 
     // SStable sstable;
@@ -140,9 +172,14 @@ int main() {
     // cout << BinarySearch(sstable, 25000, 1, sstable.len);
 
     BSTree bstree;
-    Init(bstree, RangeInt(0, 20));
+    vector<int> a;
+    a = RangeInt(0, 200);
+    random_shuffle(a.begin(), a.end());
+    Init(bstree, a);
     InOrderTraverse(bstree);
-
+    cout << '\n';
+    DeleteEqual(bstree, 10);
+    InOrderTraverse(bstree);
     return 0;
 
 }
