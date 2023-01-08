@@ -70,8 +70,6 @@ void InsertSort(vector<int> &v) {
 
 ## 折半插入排序
 
-
-
 ```cpp \\ 不使用 0 号下标
 void BinaryInsertSort(vector<int> &v) {
     int i, j;
@@ -96,5 +94,139 @@ void BinaryInsertSort(vector<int> &v) {
 折半插入排序的对象移动次数与直接插入排序相同。换言之，折半插入排序减少了比较次数，但没有减少移动次数。其平均性能优于直接插入排序。  
 时间复杂度 $O(n^2)$，空间复杂度 $O(1)$。该排序算法稳定。
 
-# 希尔排序
+## 希尔排序
 
+希尔排序先将整个待排序序列分割成若干个子序列，分别进行插入排序。待整个序列中的记录基本有序，再对全体记录进行一次直接插入排序。
+
+希尔排序是一个缩小增量排序，需要进行多遍排序。希尔排序需要指定一个增量序列，例如 $D_n>D_{n-1}>D_{n-2}>...>D_1=1$。增量序列应该是互质的、递减的，且尾项必须为 1。
+
+然后，函数首先进行一次 $D_n$-间隔排序，然后进行一次 $D_{n-1}$-间隔排序，以此类推。最终执行一次 1-间隔排序。
+
+```cpp
+void ShellSort(vector<int> &v, vector<int> delta) {
+    for(int i = 0; i < delta.size(); i++)
+        ShellSort(v, delta[i]);
+}
+void ShellSort(vector<int> &v, int delta) {
+    int i, j, x;
+    for(i = delta; i < v.size(); i++) {
+        if(v[i] < v[i - delta]) {
+            x = v[i];
+            for(j = i - delta; j >= 0 && v[0] < v[j]; j -= delta)
+                v[j + delta] = v[j];
+            v[j + delta] = x;
+        }
+    }
+}
+```
+
+希尔排序算法的效率与增量序列的取值有关。如何选择最佳的增量序列目前尚未解决。该排序算法不稳定，也不适宜在链式存储结构上实现。
+
+希尔排序的复杂度目前尚未严格证明。按一般经验来说约为 $O(n^{1.25})$。空间复杂度为 $O(1)$。
+
+# 交换排序
+
+交换排序是两两比较，如果发现逆序就进行交换，直到所有记录都有序为止。
+
+```cpp
+void Swap(int &a, int &b) {
+    int c = a;
+    a = b;
+    b = c;
+}
+```
+
+## 冒泡排序
+
+```cpp
+void BubbleSort(vector<int> &v) {
+    for(int i = 0; i < v.size(); i++)
+        for(int j = 0; j < v.size() - i - 1; j++)
+            if(v[j] > v[j + 1])
+                Swap(v[j], v[j + 1]);
+}
+```
+
+下面是冒泡排序的一个改进版本，它借助一个 flag，初值置 false。如果在某次遍历中，发生了交换，则让 flag 置 true。如果没有发生交换，flag 保持 false。这样，如果某趟遍历过后，所有元素都有序，算法就会停止。这能提高一些效率，但收益不会特别可观。
+
+```cpp
+void BubbleSort(vector<int> &v) {
+    bool flag = true;
+    for(int i = 0; i < v.size() && flag; i++){
+        flag = false;
+        for(int j = 0; j < v.size() - i - 1; j++)
+            if(v[j] > v[j + 1]) {
+                Swap(v[j], v[j + 1]);
+                flag = true;
+            }
+    }
+}
+```
+
+冒泡排序的最好情况是表已经有序。需要 $n-1$ 次比较，不需要移动。此时时间复杂度为 $O(n)$。  
+最坏情况是表完全倒序。需要 $\frac{n^2-n}2$ 次比较，以及 $\frac32(n^2-n)$ 次移动。注意一次交换需要三次移动。此时时间复杂度为 $O(n^2)$。  
+平均来说冒泡排序具有 $O(n^2)$ 的时间复杂度和 $O(1)$ 的空间复杂度。冒泡排序是稳定的。
+
+## 快速排序
+
+任取一个元素作为元素中心。让所有比该元素小的元素一律前放，比该元素大的元素一律后放。现在形成了左右两个子表。如果子表的长度大于 1，则对子表使用快速排序。到最后，每个子表只剩一个元素。
+
+```cpp
+int Partition(vector<int> &v, int lo, int hi) {
+    int pivot = v[lo];
+    while(lo < hi) {
+        while(pivot <= v[hi] && lo < hi)
+            hi--;
+        v[lo] = v[hi];
+        while(pivot >= v[lo] && lo < hi)
+            lo++;
+        v[hi] = v[lo];
+    }
+    v[lo] = pivot;
+    return lo;
+}
+void QuickSort(vector<int> &v, int lo, int hi) {
+    if(lo >= hi)
+        return;
+    int i = Partition(v, lo, hi);
+    QuickSort(v, lo, i - 1);
+    QuickSort(v, i + 1, hi);
+}
+```
+
+QuickSort 方法的时间复杂度是 $O(logn)$。Partition 方法的时间复杂度是 $O(n)$。平均来说快速排序具有 $O(nlogn)$ 的时间复杂度，具有我们讨论的所有内排序方法中最好的效率。但在最坏情况下，时间复杂度为 $O(n^2)$。  
+快速排序需要使用递归，需要递归调用栈的支持。即使不用递归，也要使用用户栈。平均来说快速排序具有 $O(logn)$ 的空间复杂度，且在最坏情况下可达 $O(n)$。   
+快速排序不稳定，也不是自然排序方法。当待排对象完全有序时，快速排序遇到最坏情况，退化为没有改进措施的冒泡排序。
+
+# 选择排序
+
+选择排序是指从待排对象中选出最小或最大元素放在最终位置。
+
+## 简单选择排序
+
+```cpp
+void SelectionSort(vector<int> &v) {
+    for(int i = 0; i < v.size() - 1; i++) {
+        int minIndex = i;
+        for(int j = i + 1; j < v.size(); j++)
+            if(v[j] < v[minIndex])
+                minIndex = j;
+        Swap(v[minIndex], v[i]);
+    }
+}
+```
+
+在最好情况下，待排对象完全有序，需要 $0$ 次移动。在最坏情况下，待排对象反向有序，需要 $3(n-1)$ 次移动。无论何种情况，该算法需要比较的次数相同，为 $\frac{n}{2}(n-1)$。  
+在最好情况、最坏情况以及平均情况下，该算法时间复杂度都为 $O(n^2)$，空间复杂度为 $O(1)$。   
+简单选择排序不稳定。
+
+## 堆排序
+
+堆是一个完全二叉树，在该树中，任何一非叶子节点均小于（或大于）它的孩子结点。或者，堆是满足下列条件的线性表：  
+$\begin{cases} a_i \le a_{2i} \\ 
+a_i \le a_{2i+1} \end{cases}$
+或
+$\begin{cases} a_i \ge a_{2i} \\ 
+a_i \ge a_{2i+1} \end{cases}$
+
+称满足该要求的、根更小的完全二叉树为小根堆。满足该要求的、根更大的完全二叉树为大根堆。

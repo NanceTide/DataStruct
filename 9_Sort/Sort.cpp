@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <vector>
 #include <random>
 #include <ctime>
@@ -45,7 +46,7 @@ bool operator==(vector<int> a, vector<int> b) {
 }
 
 void Test(void Func(vector<int>&)) {
-    auto v = RandBetween(0, 100000, 1000);
+    auto v = RandBetween(0, 1000000, 1000);
     auto v_ = v;
     Func(v);
     sort(v_.begin(), v_.end());
@@ -56,7 +57,7 @@ void Test(void Func(vector<int>&)) {
 }
 
 void TestWithout0(void Func(vector<int>&)) {
-    auto v = RandBetween(0, 100000, 1000);
+    auto v = RandBetween(0, 1000000, 1000);
     v[0] = -1;
     auto v_ = v;
     Func(v);
@@ -69,11 +70,33 @@ void TestWithout0(void Func(vector<int>&)) {
     cout << '\n';
 }
 
+void SelectionSort(vector<int> &v) {
+    for(int i = 0; i < v.size() - 1; i++) {
+        int minIndex = i;
+        for(int j = i + 1; j < v.size(); j++)
+            if(v[j] < v[minIndex])
+                minIndex = j;
+        Swap(v[i], v[minIndex]);
+    }
+}
+
 void BubbleSort(vector<int> &v) {
-    for(int i = 0; i < v.size(); i++)
-        for(int j = 0; j < i; j++)
-            if(v[j] > v[i])
-                Swap(v[i], v[j]);
+    for(int i = 0; i < v.size() - 1; i++)
+        for(int j = 0; j < v.size() - i - 1; j++)
+            if(v[j] > v[j + 1])
+                Swap(v[j], v[j + 1]);
+}
+
+void BubbleSort_(vector<int> &v) {
+    bool flag = true;
+    for(int i = 0; i < v.size() && flag; i++){
+        flag = false;
+        for(int j = 0; j < v.size() - i - 1; j++)
+            if(v[j] > v[j + 1]) {
+                Swap(v[j], v[j + 1]);
+                flag = true;
+            }
+    }
 }
 
 void InsertSort(vector<int> &v) {
@@ -110,13 +133,46 @@ void BinaryInsertSort(vector<int> &v) {
     }
 }
 
+int Partition(vector<int> &v, int lo, int hi) {
+    int pivot = v[lo];
+    while(lo < hi) {
+        while(pivot <= v[hi] && lo < hi)
+            hi--;
+        v[lo] = v[hi];
+        while(pivot >= v[lo] && lo < hi)
+            lo++;
+        v[hi] = v[lo];
+    }
+    v[lo] = pivot;
+    return lo;
+}
+
+void QuickSort(vector<int> &v, int lo, int hi) {
+    if(lo >= hi)
+        return;
+    int i = Partition(v, lo, hi);
+    QuickSort(v, lo, i - 1);
+    QuickSort(v, i + 1, hi);
+}
+
+void QuickSort(vector<int> &v) {
+    QuickSort(v, 0, v.size() - 1);
+}
+
 int main() {
 
     cout << boolalpha;
     // Test(BubbleSort);
+    // Test(BubbleSort_);
     // Test(InsertSort);
     // Test(InsertSort_);
-    TestWithout0(BinaryInsertSort);
+    // TestWithout0(BinaryInsertSort);
+    Test(QuickSort);
+
+    // auto v = RandBetween(0, 200, 10);
+    // QuickSort(v);
+    // Prt(v);
+
     return 0;
 
 }

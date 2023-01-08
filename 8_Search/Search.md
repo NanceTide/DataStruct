@@ -110,7 +110,8 @@ int BinarySearch(SStable ST, KeyType key, int lo, int hi) {
 
 设表长 $n=2^h-1$，深度 $h=log_2(n+1)$，每个记录的查找概率相等。
 
-$ASL=\sum_{i=1}^np_ic_i=\frac1n\sum ^n_{i=1}c_i\\=\frac1n\sum^h_{j=1}j2^{j-1}=\frac{n+1}nlog_2(n+1)-1$  
+$ASL=\sum _{i=1} ^{n} p_{i} c_{i} = \frac{1}{n} \sum ^{n}_{i=1} c_i \\
+= \frac{1}{n} \sum ^{h} _{j=1} j2^{j-1} = \frac{n+1} nlog_2(n+1)-1$  
 
 当 n 足够大时，可认为 $ASL=log_2(n+1)-1$。
 
@@ -127,7 +128,7 @@ $ASL=\sum_{i=1}^np_ic_i=\frac1n\sum ^n_{i=1}c_i\\=\frac1n\sum^h_{j=1}j2^{j-1}=\f
 
 一般情况下，为了进行分块查找，可以将长度为 n 的表均匀分成 b 块，每块含有 s 个记录，即 $b=\lceil\frac{n}{s}\rceil$。我们还假定每个块的查找概率均为 $\frac1b$，每个记录的查找概率均为 $\frac1s$，用二分查找确定所在块。
 
-$ASL=L_b+l_w\thickapprox log_2(\frac{n}{s}+1)+\frac{s}2$
+$ASL=L_{b} +l_{w} \thickapprox log_{2} (\frac{n}{s} +1)+ \frac{s}{2}$
 
 分块查找的插入和删除比较容易，无需进行大量改动。但是分块查找需要使用一个索引表，且需要对这个索引表进行排序运算。
 
