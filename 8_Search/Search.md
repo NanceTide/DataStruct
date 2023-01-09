@@ -111,9 +111,9 @@ int BinarySearch(SStable ST, KeyType key, int lo, int hi) {
 设表长 $n=2^h-1$，深度 $h=log_2(n+1)$，每个记录的查找概率相等。
 
 $ASL=\sum _{i=1} ^{n} p_{i} c_{i} = \frac{1}{n} \sum ^{n}_{i=1} c_i \\
-= \frac{1}{n} \sum ^{h} _{j=1} j2^{j-1} = \frac{n+1} nlog_2(n+1)-1$  
+= \frac{1}{n} \sum ^{h} _{j=1} j2^{j-1} = \frac{n+1} nlog_{2}(n+1)-1$  
 
-当 n 足够大时，可认为 $ASL=log_2(n+1)-1$。
+当 n 足够大时，可认为 $ASL=log_{2}(n+1)-1$。
 
 折半查找法只适用于有序的顺序表，它于无序表或链表无效。
 
@@ -351,7 +351,7 @@ $Hash(key)=a\cdot key+b$
 ### 除留余数
 
 $Hash(key)=key\ \%\ p$  
-设表长为 m，可取 p <= m 且为质数。
+设表长为 m，可取 $p \le m$ 且为质数。
 
 ## 冲突处理
 
@@ -386,8 +386,8 @@ $H_i=(Hash(key)+d_i)\ \%\ m$
 - 散列表装填因子 $\alpha$  
 其中 $\alpha=\frac{表中记录数}{哈希表长度}$。$\alpha$ 越大，说明表越满，冲突发生可能性越大，查找时比较次数就会越多。
 
-$ASL_{链地址}\thickapprox1+\frac{\alpha}2$   
-$ASL_{线性探测}\thickapprox\frac{1}{2}(1+\frac1{1-\alpha})$   
-$ASL_{随机探测}\thickapprox-\frac{1}{\alpha}ln(1-\alpha)$
+$ASL_{链地址}\thickapprox 1+ \frac{\alpha}2$   
+$ASL_{线性探测}\thickapprox \frac{1}{2}(1+ \frac1{1- \alpha})$   
+$ASL_{随机探测}\thickapprox - \frac{1}{ \alpha}ln(1- \alpha)$
 
 一般来说，链地址优于开放寻址，除留余数作散列函数优于其他类型函数。
