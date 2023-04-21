@@ -1,4 +1,4 @@
-# 树
+#   树
 
 ## 树的定义
 
@@ -475,7 +475,7 @@ int Depth(BiTree root) {
 }
 ```
 
-## 求结点总个数
+ ## 求结点总个数
 
 ```cpp
 int NodeCount(BiTree root) {
